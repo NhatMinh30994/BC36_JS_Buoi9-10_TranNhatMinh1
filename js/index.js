@@ -5,26 +5,27 @@ function validateForm() {
   var perName = document.getElementById("name").value;
   var perEmail = document.getElementById("email").value;
   var perPassword = document.getElementById("password").value;
-  // var perDate = document.getElementById("datepicker").value;
-  // var perSalary = +document.getElementById("luongCB").value;
-  // var perPosition = document.getElementById("chucvu").value;
-  // var perHours = +document.getElementById("gioLam").value;
+  var perDate = document.getElementById("datepicker").value;
+  var perSalary = document.getElementById("luongCB").value;
+  var perPosition = document.getElementById("chucvu").value;
+  var perHours = document.getElementById("gioLam").value;
 
   var isValid = true;
 
-  isValid &=
-    required(perId, "tbTKNV") && checkLength(perId, "tbTKNV", 4, 6);
-  isValid &=
-    required(perName, "tbTen") &&
-    checkPerName(perName, "tbTen");
+  isValid &= required(perId, "tbTKNV") && checkLength(perId, "tbTKNV", 4, 6);
+  isValid &= required(perName, "tbTen") && checkPerName(perName, "tbTen");
   isValid &=
     required(perEmail, "tbEmail") && checkPerEmail(perEmail, "tbEmail");
-  // isValid &=
-  //   required(perPassword, "tbMatKhau") && checkPerPassword(perPassword, "pastbMatKhausword", 6, 10);
-  // isValid &= required(perDate, "tbNgay");
-  // isValid &= required(perSalary, "tbLuongCB");
-  // isValid &= required(perPosition, "tbChucVu");
-  // isValid &= required(perHours, "tbGiolam");
+  isValid &=
+    required(perPassword, "tbMatKhau") &&
+    checkPerPassword(perPassword, "tbMatKhau", 6, 10);
+  isValid &= required(perDate, "tbNgay") && checkPerDate(perDate, "tbNgay");
+  isValid &=
+    required(perSalary, "tbLuongCB") &&
+    checkSalary(perSalary, "tbLuongCB", 1000000, 20000000);
+  isValid &= required(perPosition, "tbChucVu");
+  isValid &=
+    required(perHours, "tbGiolam") && checkHour(perHours, "tbGiolam", 80, 200);
 
   // nếu isValid = true, form đúng và ngược lại
   return isValid;
@@ -70,7 +71,7 @@ function createPersonnel() {
 
   renderPersonnels();
 
-  saveData()
+  saveData();
 }
 
 // Hiển thị danh sách
@@ -101,7 +102,6 @@ function renderPersonnels(data) {
   // document.getElementById("chucvu") = html.option;
   document.getElementById("tableDanhSach").innerHTML = html;
 }
-
 
 function saveData() {
   // chuyển từ một mảng object sang định dạng JSON
@@ -177,7 +177,6 @@ function searchPersonnels() {
   renderPersonnels(result);
 }
 
-
 // update 1: đưa thông tin của nhân viên muốn update lên form
 function getPersonnelDetail(perId) {
   var index = findById(perId);
@@ -201,6 +200,10 @@ function getPersonnelDetail(perId) {
 
 // update 2: cho phép người dùng sửa trên form, người dùng nhấn nút lưu => cập nhật
 function updatePersonnel() {
+  // validate dữ liệu
+  var isValid = validateForm();
+  if (!isValid) return;
+
   var perId = document.getElementById("tknv").value;
   var perName = document.getElementById("name").value;
   var perEmail = document.getElementById("email").value;
@@ -233,9 +236,7 @@ function updatePersonnel() {
 
   document.getElementById("formQLNV").reset();
   document.getElementById("tknv").disabled = false;
-
 }
-
 
 window.onload = function () {
   console.log("window onload");
@@ -259,7 +260,33 @@ function required(value, spanId) {
 // check minlength - maxlength
 function checkLength(value, spanId, min, max) {
   if (value.length < min || value.length > max) {
-    document.getElementById(spanId).innerHTML = `*Độ dài phải từ ${min} tới ${max} kí tự`;
+    document.getElementById(
+      spanId
+    ).innerHTML = `*Độ dài phải từ ${min} tới ${max} kí tự`;
+    return false;
+  }
+
+  document.getElementById(spanId).innerHTML = "";
+  return true;
+}
+
+function checkSalary(value, spanId, min, max) {
+  if (value < min || value > max) {
+    document.getElementById(
+      spanId
+    ).innerHTML = `*Giá trị phải từ ${min} tới ${max}`;
+    return false;
+  }
+
+  document.getElementById(spanId).innerHTML = "";
+  return true;
+}
+
+function checkHour(value, spanId, min, max) {
+  if (value < min || value > max) {
+    document.getElementById(
+      spanId
+    ).innerHTML = `*Giá trị phải từ ${min} tới ${max}`;
     return false;
   }
 
@@ -288,7 +315,8 @@ function checkPerName(value, spanId) {
     return true;
   }
 
-  document.getElementById(spanId).innerHTML = "*Tên nhân viên phải là chữ (ko dấu)";
+  document.getElementById(spanId).innerHTML =
+    "*Tên nhân viên phải là chữ (ko dấu)";
   return false;
 }
 
@@ -304,12 +332,25 @@ function checkPerEmail(value, spanId) {
 }
 
 function checkPerPassword(value, spanId) {
-  var pattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]$/;
+  var pattern =
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,10}$/;
   if (pattern.test(value)) {
     document.getElementById(spanId).innerHTML = "";
     return true;
   }
 
   document.getElementById(spanId).innerHTML = "*Mật khẩu phải đúng định dạng";
+  return false;
+}
+
+function checkPerDate(value, spanId) {
+  var pattern =
+    /^(0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])[- /.](19|20)\d\d$/;
+  if (pattern.test(value)) {
+    document.getElementById(spanId).innerHTML = "";
+    return true;
+  }
+
+  document.getElementById(spanId).innerHTML = "*Phải đúng định dạng mm/dd/yyyy";
   return false;
 }
